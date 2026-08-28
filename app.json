@@ -1,12 +1,7 @@
 {
   "expo": {
-<<<<<<< HEAD
-    "name": "Movil",
-    "slug": "Movil",
-=======
-    "name": "ResrvaClasesIngles",
-    "slug": "ResrvaClasesIngles",
->>>>>>> 309e35f (Creacion de components)
+    "name": "ReservaClasesIngles",
+    "slug": "ReservaClasesIngles",
     "version": "1.0.0",
     "orientation": "portrait",
     "icon": "./assets/icon.png",

@@ -1,27 +1,26 @@
 import React, { useState, useEffect } from 'react';
-import { View, Text, StyleSheet, Pressable, textInput } from 'react-native';
-import EtiquetaNivel from './EtiquetaNivel';
+import { View, Text, StyleSheet, Pressable, TextInput, ScrollView } from 'react-native';
+import EtiquetaNivel from '../components/EtiquetaNivel';
 import { colors, spacing, radius, typography } from '../theme';
 import { formatearPrecio, CLASES, NIVELES } from '../data/clases';
 import { Ionicons } from '@expo/vector-icons';
-import { ScrollView } from 'react-native/types_generated/index';
 import NivelChip from '../components/NivelChip';
 
 export default function StartScreen({ navigation }) {
-    cosnt[nivel, setNivel] = useState();
-    const [busqueda, setBusqueda] = useState();
+    const [nivel, setNivel] = useState();
+    const [busqueda, setBusqueda] = useState('');
 
     return (
         <View>
-            <Text>Aplicación de Reserva de Clases de Inglés</Text>
-            <view>
-                <Ionicons name="search" size={18} color={colors.fondo} />
-                <textInput
+            <Text style={{ color: colors.texto }}>Aplicación de Reserva de Clases de Inglés</Text>
+            <View>
+                <Ionicons name="search" size={18} color={colors.superficie} />
+                <TextInput
                     value={busqueda}
                     onChangeText={setBusqueda}
                     placeholder="Ingrese el nombre o nivel para la busqueda"
-                    autocorrect={false}
-                    autocomplete={false}
+                    autoCorrect={false}
+                    autoComplete="off"
                 />
                 {
                     busqueda.length > 0 && (
@@ -32,17 +31,18 @@ export default function StartScreen({ navigation }) {
                     )
                 }
 
-            </view>
+            </View>
             <ScrollView
                 horizontal
                 showsHorizontalScrollIndicator={false}
-                style={{ flexgrow: 0, }}
+                style={{ flexGrow: 0, }}
             >
                 {
                     NIVELES.map(item => (
                         <NivelChip
+                            key={item}
                             etiqueta={item}
-                            activo={item}
+                            activo={nivel === item}
                             onPress={() => setNivel(item)}
                         />
                     ))
@@ -50,6 +50,6 @@ export default function StartScreen({ navigation }) {
             </ScrollView>
 
         </View>
-        
+
     );
 }

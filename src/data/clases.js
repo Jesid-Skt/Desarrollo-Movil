@@ -1,5 +1,4 @@
 export const NIVELES = ['Todos', 'Basico', 'Intermedio', 'Avanzado', 'Conversacional'];
- 
 export const CLASES = [
   {
     id: '1',
@@ -122,6 +121,6 @@ export const CLASES = [
     horarios: ['Mar 8:00 p.m.', 'Sáb 8:00 a.m.'],
   },
 ];
- 
+
 export const formatearPrecio = (valor) =>
   '$' + valor.toLocaleString('es-CO') + ' COP';

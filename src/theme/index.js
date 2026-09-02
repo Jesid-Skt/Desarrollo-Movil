@@ -1,10 +1,13 @@
-import { Platform } from "react-native";
 export const colors = {
-    fondo: '#000000ff',
+    fondo: '#F4F7F6',
     superficie: '#ffffff',
-    texto: '#ffffffff',
-    border: '#bbecf0',
-    primario: '#5520C8',
+    texto: '#17342F',
+    textoSuave: '#6C817C',
+    borde: '#DDE9E5',
+    border: '#DDE9E5',
+    primario: '#0E6B5A',
+    acento: '#F4B942',
+    primarioSuave: '#DDF2EC',
 
 };
 

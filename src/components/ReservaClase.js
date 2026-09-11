@@ -185,7 +185,7 @@ export default function ReservaClase({
                 ]}
             >
                 <Text style={styles.botonTexto}>
-                    Confirmar reserva
+                    Realizar reserva
                 </Text>
 
                 <Ionicons

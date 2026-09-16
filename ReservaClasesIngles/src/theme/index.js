@@ -1,10 +1,14 @@
-import { Platform } from "react-native";
 export const colors = {
-    fondo: '#000000ff',
+    fondo: '#fff8f8',
     superficie: '#ffffff',
-    texto: '#ffffffff',
-    border: '#bbecf0',
-    primario: '#5520C8',
+    texto: '#241414',
+    textoSuave: '#766565',
+    borde: '#ead6d6',
+    border: '#ead6d6',
+    primario: '#c62828',
+    primarioSuave: '#fdeaea',
+    acento: '#b71c1c',
+    text: '#241414',
 
 };
 
@@ -30,7 +34,11 @@ export const typography = {
         fontSize: 26,
         fontWeight: '800',
         color: colors.texto,
-    }
+    },
+    cuerpo: {
+        fontSize: 15,
+        lineHeight: 22,
+    },
 }
 
 export default {

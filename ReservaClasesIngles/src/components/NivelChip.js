@@ -19,6 +19,9 @@ export default function NivelChip({ etiqueta, activo, onPress }) {
  
 const style = StyleSheet.create({
     chip: {
+        alignSelf: 'flex-start',
+        flexGrow: 0,
+        flexShrink: 0,
         paddingVertical: spacing.sm,
         paddingHorizontal: spacing.lg,
         borderRadius: radius.full,

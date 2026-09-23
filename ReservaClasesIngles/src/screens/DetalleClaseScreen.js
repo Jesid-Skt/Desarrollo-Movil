@@ -1,33 +1,33 @@
 import React, { useState } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, Pressable, Alert } from 'react-native';
+import { View, Text, Image, ScrollView, StyleSheet, Pressable } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import EtiquetaNivel from '../components/EtiquetaNivel';
 import { colors, spacing, radius, typography } from '../theme';
 import { formatearPrecio } from '../data/clases';
+import useReserva from '../hooks/useReserva';
 
 export default function DetalleClaseScreen({ route, navigation }) {
     const insets = useSafeAreaInsets();
     const { clase } = route.params;
+    const { reservarClase } = useReserva();
+
     const [horarioSeleccionado, setHorarioSeleccionado] = useState(null);
+    const [cuposDisponibles, setCuposDisponibles] = useState(clase.cupos);
+
+    const sinCupos = cuposDisponibles <= 0;
 
     const confirmarReserva = () => {
         if (!horarioSeleccionado) {
-            Alert.alert('Selecciona un horario', 'Elige uno de los horarios disponibles para continuar.');
             return;
         }
 
-        Alert.alert(
-            'Confirmar reserva',
-            `${clase.titulo}\n${horarioSeleccionado}`,
-            [
-                { text: 'Cancelar', style: 'cancel' },
-                {
-                    text: 'Confirmar',
-                    onPress: () => Alert.alert('Reserva confirmada', 'Tu clase ha sido reservada correctamente.'),
-                },
-            ],
-        );
+        if (sinCupos) {
+            return;
+        }
+
+        reservarClase({ claseId: clase.id, horario: horarioSeleccionado });
+        setCuposDisponibles(prev => prev - 1);
     };
 
     return (
@@ -58,7 +58,7 @@ export default function DetalleClaseScreen({ route, navigation }) {
                         <View style={styles.dato}>
                             <Ionicons name="people-outline" size={20} color={colors.primario} />
                             <Text style={styles.datoEtiqueta}>Cupos</Text>
-                            <Text style={styles.datoValor}>{clase.cupos} disponibles</Text>
+                            <Text style={styles.datoValor}>{cuposDisponibles} disponibles</Text>
                         </View>
                     </View>
 
@@ -85,24 +85,24 @@ export default function DetalleClaseScreen({ route, navigation }) {
                                 const seleccionado = horario === horarioSeleccionado;
 
                                 return (
-                                <Pressable
-                                    key={horario}
-                                    accessibilityRole="button"
-                                    accessibilityState={{ selected: seleccionado }}
-                                    onPress={() => setHorarioSeleccionado(horario)}
-                                    style={({ pressed }) => [
-                                        styles.horario,
-                                        seleccionado && styles.horarioSeleccionado,
-                                        pressed && styles.horarioPresionado,
-                                    ]}
-                                >
-                                    <Ionicons
-                                        name={seleccionado ? 'checkmark-circle' : 'calendar-outline'}
-                                        size={19}
-                                        color={seleccionado ? colors.superficie : colors.primario}
-                                    />
-                                    <Text style={styles.horarioTexto}>{horario}</Text>
-                                </Pressable>
+                                    <Pressable
+                                        key={horario}
+                                        accessibilityRole="button"
+                                        accessibilityState={{ selected: seleccionado }}
+                                        onPress={() => setHorarioSeleccionado(horario)}
+                                        style={({ pressed }) => [
+                                            styles.horario,
+                                            seleccionado && styles.horarioSeleccionado,
+                                            pressed && styles.horarioPresionado,
+                                        ]}
+                                    >
+                                        <Ionicons
+                                            name={seleccionado ? 'checkmark-circle' : 'calendar-outline'}
+                                            size={19}
+                                            color={seleccionado ? colors.superficie : colors.primario}
+                                        />
+                                        <Text style={styles.horarioTexto}>{horario}</Text>
+                                    </Pressable>
                                 );
                             })}
                         </View>
@@ -115,15 +115,20 @@ export default function DetalleClaseScreen({ route, navigation }) {
                     <Text style={styles.precio}>{formatearPrecio(clase.precio)}</Text>
                 </View>
                 <Pressable
+                    disabled={!horarioSeleccionado || sinCupos}
                     style={({ pressed }) => [
                         styles.boton,
-                        !horarioSeleccionado && styles.botonDeshabilitado,
-                        pressed && horarioSeleccionado && styles.botonPresionado,
+                            (!horarioSeleccionado || sinCupos) && styles.botonDeshabilitado,
+                            pressed && horarioSeleccionado && !sinCupos && styles.botonPresionado,
                     ]}
                     onPress={confirmarReserva}
                 >
                     <Text style={styles.botonTexto}>
-                        {horarioSeleccionado ? 'Reservar clase' : 'Escoge un horario'}
+                        {sinCupos
+                            ? 'Agotado'
+                            : horarioSeleccionado
+                                ? 'Reservar clase'
+                                : 'Escoge un horario'}
                     </Text>
                     <Ionicons name="arrow-forward" size={18} color={colors.superficie} />
                 </Pressable>

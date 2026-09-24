@@ -1,47 +1,43 @@
-import { useCallback, useEffect, useState } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import AsyncStorage from '@react-native-async-storage/async-storage';
 
 export default function useAlmacenamiento(clave, valorInicial) {
     const [valor, setValor] = useState(valorInicial);
-    const [activo, setActivo] = useState(false);
+    const [listo, setListo] = useState(false);
 
     useEffect(() => {
-        let componenteActivo = true;
+        let activo = true; // bandera para saber si estoy montando el componente
 
-        const leer = async () => {
-            setActivo(true);
-
+        const cargar = async () => {
             try {
-                const guardado = await AsyncStorage.getItem(clave);
-
-                if (guardado !== null && componenteActivo) {
-                    setValor(JSON.parse(guardado));
+                const guardando = await AsyncStorage.getItem(clave);
+                if (activo && guardando !== null) {
+                    setValor(JSON.parse(guardando));
                 }
             } catch (error) {
-                console.error('Error leyendo', clave, error);
+                console.log('error leyendo', clave, error);
             } finally {
-                if (componenteActivo) {
-                    setActivo(false);
+                if (activo) {
+                    setListo(true);
                 }
             }
         };
 
-        leer();
+        cargar();
 
         return () => {
-            componenteActivo = false;
-            setActivo(false);
+            activo = false;
         };
     }, [clave]);
 
-    const actualizar = useCallback(async nuevoValor => {
+    const actualizar = useCallback(async (nuevoValor) => {
         try {
-            await AsyncStorage.setItem(clave, JSON.stringify(nuevoValor));
             setValor(nuevoValor);
+            await AsyncStorage.setItem(clave, JSON.stringify(nuevoValor));
         } catch (error) {
-            console.error('Error guardando', clave, error);
+            console.log('error guardar', clave, error);
         }
     }, [clave]);
 
-    return { valor, actualizar, activo };
+    return [valor, actualizar, listo];
 }

@@ -2,35 +2,35 @@ import React, { createContext, useCallback, useEffect, useState, useMemo } from 
 import AsyncStorage from '@react-native-async-storage/async-storage';
 import useAlmacenamiento from '../hooks/useAlmacenamiento';
 
-const CLAVE_RESERVAS = '@reservas_mj20';
+const CLAVE = '@reservas_ingles';
 
-export const ReservasContext = createContext();
+export const ReservasContext = createContext(null);
 
 export function ReservasProvider({ children }) {
     const [reservas, setReservas] = useState([]);
     const [cargando, setCargando] = useState(true);
 
-    //Crear la funcion cargar
-
+    // Cargar las reservas que tengo guardadas
     useEffect(() => {
         const cargar = async () => {
             try {
-                const guardando = await AsyncStorage.getItem(CLAVE_RESERVAS);
-                if (guardando !== null) {
-                    setReservas(JSON.parse(guardando));
+                const guardado = await AsyncStorage.getItem(CLAVE);
+                if (guardado !== null) {
+                    setReservas(JSON.parse(guardado));
                 }
             } catch (error) {
-                console.log('Ocurrió un error al cargar la información', error)
+                console.log('error leyendo las reservas', error);
             } finally {
                 setCargando(false);
             }
         };
         cargar();
-    }, [])
+    }, []);
+
     // Guardar cada vez que cambie el arreglo
     useEffect(() => {
         if (cargando) return;
-        AsyncStorage.setItem(CLAVE_RESERVAS, JSON.stringify(reservas)).catch((error) =>
+        AsyncStorage.setItem(CLAVE, JSON.stringify(reservas)).catch((error) =>
             console.log('Error guardando reservas', error)
         );
     }, [reservas, cargando]);
@@ -52,8 +52,13 @@ export function ReservasProvider({ children }) {
                 resultados = { ok: false }
                 return prev;
             }
-        return [nueva, ...prev]
+            return [nueva, ...prev]
         })
     }, []);
 
-}; // esta llave es la que cierra la funcion de provider
+    return (
+        <ReservasContext.Provider value={{ reservas, setReservas, cargando, agregarReserva }}>
+            {children}
+        </ReservasContext.Provider>
+    );
+} // esta llave es la que cierra la funcion de provider

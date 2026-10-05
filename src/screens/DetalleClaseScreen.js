@@ -17,7 +17,7 @@ export default function DetalleClaseScreen({ route, navigation }) {
 
     const sinCupos = cuposDisponibles <= 0;
 
-    const confirmarReserva = () => {
+    const confirmarReserva = async () => {
         if (!horarioSeleccionado) {
             return;
         }
@@ -26,8 +26,11 @@ export default function DetalleClaseScreen({ route, navigation }) {
             return;
         }
 
-        reservarClase({ claseId: clase.id, horario: horarioSeleccionado });
-        setCuposDisponibles(prev => prev - 1);
+        const resultado = await reservarClase(clase, horarioSeleccionado);
+
+        if (resultado.ok) {
+            setCuposDisponibles(prev => prev - 1);
+        }
     };
 
     return (

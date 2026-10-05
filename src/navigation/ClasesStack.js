@@ -1,6 +1,6 @@
 import React from "react";
 import { createNativeStackNavigator } from "@react-navigation/native-stack";
-import StartScreen from "../screens/StartScreen";
+import MainScreen from "../screens/MainScreen";
 import { colors } from "../theme";
 import DetalleClaseScreen from "../screens/DetalleClaseScreen";
 
@@ -11,16 +11,9 @@ export default function ClasesStack() {
         <Stack.Navigator>
             <Stack.Screen
                 name="Start"
-                component={StartScreen}
+                component={MainScreen}
                 options={{
-                    title: 'Inicio',
-                    headerStyle: {
-                        backgroundColor:
-                            colors.fondo,
-                    },
-
-
-                    headerTintColor: colors.primario
+                    headerShown: false, // Ocultamos el header porque MainScreen es a pantalla completa
                 }}
             />
             <Stack.Screen
@@ -29,7 +22,6 @@ export default function ClasesStack() {
                 options={{
                     title: 'Detalle',
                     headerBackTitle: 'Atrás',
-
                 }}
             />
         </Stack.Navigator>

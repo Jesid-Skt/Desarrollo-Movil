@@ -46,14 +46,30 @@ export function ReservasProvider({ children }) {
             creadoEn: new Date().toISOString(),
         }
 
-        let resultados = { ok: true };
+        let resultados = { ok: true, mensaje: '' };
         setReservas((prev) => {
             if (prev.some((r) => r.id === nueva.id)) {
-                resultados = { ok: false }
+                 resultados = { ok: false, mensaje: 'Ya tienes reservada esta clase en este horario.' };
                 return prev;
             }
-        return [nueva, ...prev]
-        })
+            // Validar cruce de horarios (cualquier clase en el mismo horario)
+            if (prev.some((r) => r.horario === horario)) {
+                resultados = { ok: false, mensaje: 'Ya tienes otra reserva en este horario.' };
+                return prev;
+            }
+            return [nueva, ...prev]
+        });
+        return resultados;
     }, []);
+
+    const cancelarReserva = useCallback((id) => {
+        setReservas((prev) => prev.filter(r => r.id !== id));
+    }, []);
+
+    return (
+        <ReservasContext.Provider value={{ reservas, setReservas, cargando, agregarReserva, cancelarReserva }}>
+            {children}
+        </ReservasContext.Provider>
+    );
 
 }; // esta llave es la que cierra la funcion de provider

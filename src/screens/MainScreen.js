@@ -3,12 +3,13 @@ import { View, StyleSheet, TouchableOpacity, Text } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import StartScreen from './StartScreen';
 import ReservasScreen from './ReservasScreen';
+import PerfilScreen from './PerfilScreen';
 import { colors } from '../theme';
- 
+
 export default function MainScreen({ navigation }) {
     // Estado para controlar qué pestaña está activa
     const [pestanaActiva, setPestanaActiva] = useState('Inicio');
- 
+
     // Función para renderizar el contenido dependiendo de la pestaña
     const renderContenido = () => {
         if (pestanaActiva === 'Inicio') {
@@ -19,62 +20,53 @@ export default function MainScreen({ navigation }) {
             return <ReservasScreen />;
         }
         if (pestanaActiva === 'Perfil') {
-            return (
-                <View style={styles.center}>
-                    <Text>Pantalla de Perfil (Próximo paso)</Text>
-                </View>
-            );
+            return <PerfilScreen />;
         }
     };
- 
+
     return (
         <View style={styles.contenedor}>
-            {/* Contenido dinámico (Arriba) */}
             <View style={styles.contenido}>
                 {renderContenido()}
             </View>
-           
-            {/* Barra de navegación inferior (Abajo) */}
+            
             <View style={styles.barraInferior}>
-                {/* Botón Inicio */}
-                <TouchableOpacity
-                    style={styles.botonPestana}
+                <TouchableOpacity 
+                    style={styles.botonPestana} 
                     onPress={() => setPestanaActiva('Inicio')}
                 >
-                    <Ionicons
-                        name={pestanaActiva === 'Inicio' ? 'home' : 'home-outline'}
-                        size={24}
-                        color={pestanaActiva === 'Inicio' ? (colors.primario || '#2563EB') : 'gray'}
+                    <Ionicons 
+                        name={pestanaActiva === 'Inicio' ? 'home' : 'home-outline'} 
+                        size={24} 
+                        color={pestanaActiva === 'Inicio' ? (colors.primario || '#2563EB') : 'gray'} 
                     />
                     <Text style={[styles.textoPestana, pestanaActiva === 'Inicio' && styles.textoActivo]}>
                         Inicio
                     </Text>
                 </TouchableOpacity>
- 
-                {/* Botón Reservas */}
-                <TouchableOpacity
-                    style={styles.botonPestana}
+
+                <TouchableOpacity 
+                    style={styles.botonPestana} 
                     onPress={() => setPestanaActiva('Reservas')}
                 >
-                    <Ionicons
-                        name={pestanaActiva === 'Reservas' ? 'calendar' : 'calendar-outline'}
-                        size={24}
-                        color={pestanaActiva === 'Reservas' ? (colors.primario || '#2563EB') : 'gray'}
+                    <Ionicons 
+                        name={pestanaActiva === 'Reservas' ? 'calendar' : 'calendar-outline'} 
+                        size={24} 
+                        color={pestanaActiva === 'Reservas' ? (colors.primario || '#2563EB') : 'gray'} 
                     />
                     <Text style={[styles.textoPestana, pestanaActiva === 'Reservas' && styles.textoActivo]}>
                         Reservas
                     </Text>
                 </TouchableOpacity>
- 
-                {/* Botón Perfil */}
-                <TouchableOpacity
-                    style={styles.botonPestana}
+
+                <TouchableOpacity 
+                    style={styles.botonPestana} 
                     onPress={() => setPestanaActiva('Perfil')}
                 >
-                    <Ionicons
-                        name={pestanaActiva === 'Perfil' ? 'person' : 'person-outline'}
-                        size={24}
-                        color={pestanaActiva === 'Perfil' ? (colors.primario || '#2563EB') : 'gray'}
+                    <Ionicons 
+                        name={pestanaActiva === 'Perfil' ? 'person' : 'person-outline'} 
+                        size={24} 
+                        color={pestanaActiva === 'Perfil' ? (colors.primario || '#2563EB') : 'gray'} 
                     />
                     <Text style={[styles.textoPestana, pestanaActiva === 'Perfil' && styles.textoActivo]}>
                         Perfil
@@ -84,7 +76,7 @@ export default function MainScreen({ navigation }) {
         </View>
     );
 }
- 
+
 const styles = StyleSheet.create({
     contenedor: {
         flex: 1,

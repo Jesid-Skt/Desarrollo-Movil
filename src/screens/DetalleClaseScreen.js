@@ -11,6 +11,7 @@ export default function DetalleClaseScreen({ route, navigation }) {
     const insets = useSafeAreaInsets();
     const { clase } = route.params;
     const { reservarClase } = useReserva();
+    const { agregarReserva } = useReserva();
 
     const [horarioSeleccionado, setHorarioSeleccionado] = useState(null);
     const [cuposDisponibles, setCuposDisponibles] = useState(clase.cupos);
@@ -29,6 +30,8 @@ export default function DetalleClaseScreen({ route, navigation }) {
         const resultado = await reservarClase(clase, horarioSeleccionado);
 
         if (resultado.ok) {
+            
+            agregarReserva(clase, horarioSeleccionado);
             setCuposDisponibles(prev => prev - 1);
         }
     };

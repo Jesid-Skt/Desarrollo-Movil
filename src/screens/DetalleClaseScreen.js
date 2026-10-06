@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { View, Text, Image, ScrollView, StyleSheet, Pressable } from 'react-native';
+import { View, Text, Image, ScrollView, StyleSheet, Pressable, Alert } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
 import EtiquetaNivel from '../components/EtiquetaNivel';
@@ -10,7 +10,6 @@ import useReserva from '../hooks/useReserva';
 export default function DetalleClaseScreen({ route, navigation }) {
     const insets = useSafeAreaInsets();
     const { clase } = route.params;
-    const { reservarClase } = useReserva();
     const { agregarReserva } = useReserva();
 
     const [horarioSeleccionado, setHorarioSeleccionado] = useState(null);
@@ -18,21 +17,26 @@ export default function DetalleClaseScreen({ route, navigation }) {
 
     const sinCupos = cuposDisponibles <= 0;
 
-    const confirmarReserva = async () => {
+    const confirmarReserva = () => {
         if (!horarioSeleccionado) {
+            Alert.alert('Horario requerido', 'Por favor selecciona un horario para la clase.');
             return;
         }
 
         if (sinCupos) {
+            Alert.alert('Sin cupos', 'No quedan cupos disponibles para esta clase.');
             return;
         }
 
-        const resultado = await reservarClase(clase, horarioSeleccionado);
+        const resultado = agregarReserva(clase, horarioSeleccionado);
 
         if (resultado.ok) {
-            
-            agregarReserva(clase, horarioSeleccionado);
             setCuposDisponibles(prev => prev - 1);
+            Alert.alert('¡Éxito!', resultado.mensaje, [
+                { text: 'Aceptar', onPress: () => navigation.goBack() }
+            ]);
+        } else {
+            Alert.alert('Atención', resultado.mensaje);
         }
     };
 

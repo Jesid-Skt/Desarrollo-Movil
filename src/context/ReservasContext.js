@@ -67,7 +67,7 @@ export function ReservasProvider({ children }) {
     }, []);
 
     return (
-        <ReservasContext.Provider value={{ reservas, setReservas, cargando, agregarReserva, cancelarReserva }}>
+        <ReservasContext.Provider value={{ reservas, setReservas, cargando, agregarReserva, reservarClase: agregarReserva, cancelarReserva }}>
             {children}
         </ReservasContext.Provider>
     );

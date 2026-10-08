@@ -2,37 +2,37 @@ import React, { useState, useEffect } from 'react';
 import { View, Text, TextInput, TouchableOpacity, StyleSheet, Alert, ActivityIndicator, ScrollView, Image } from 'react-native';
 import { Ionicons } from '@expo/vector-icons';
 import { useSafeAreaInsets } from 'react-native-safe-area-context';
-import { getData, saveData } from '../services/storage';
+import { getData, saveData, removeData } from '../services/storage';
 import { colors, spacing } from '../theme';
-
+ 
 const PERFIL_KEY = '@perfil_usuario';
-
+ 
 // Validaciones de formato
 const regexCorreo = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
 const validarCorreo = (email) => regexCorreo.test(email.trim());
-
+ 
 const validarTelefono = (tel) => {
     const digitos = tel.replace(/\D/g, '');
     return digitos.length >= 7 && digitos.length <= 15;
 };
-
+ 
 export default function PerfilScreen() {
     const insets = useSafeAreaInsets();
     const [cargando, setCargando] = useState(true);
     const [existePerfil, setExistePerfil] = useState(false);
     const [errorCarga, setErrorCarga] = useState(false);
-
+ 
     // Estados para el formulario
     const [nombre, setNombre] = useState('');
     const [apellido, setApellido] = useState('');
     const [correo, setCorreo] = useState('');
     const [telefono, setTelefono] = useState('');
     const [foto, setFoto] = useState('');
-
+ 
     useEffect(() => {
         cargarPerfil();
     }, []);
-
+ 
     // 1. Valida si cuenta con perfil creado y carga los datos desde storage
     const cargarPerfil = async () => {
         setCargando(true);
@@ -56,12 +56,12 @@ export default function PerfilScreen() {
             setCargando(false);
         }
     };
-
+ 
     // 2. Valida y guarda en almacenamiento (Flujo de Registro / Actualización)
     const guardarPerfil = async () => {
         const correoLimpio = correo.trim();
         const telefonoLimpio = telefono.trim();
-
+ 
         // Validación de formato: correo
         if (!correoLimpio) {
             Alert.alert("Campo requerido", "El correo electrónico es obligatorio.");
@@ -71,7 +71,7 @@ export default function PerfilScreen() {
             Alert.alert("Formato inválido", "Por favor ingresa un correo electrónico válido (ejemplo: usuario@correo.com).");
             return;
         }
-
+ 
         // Validación de formato: teléfono
         if (!telefonoLimpio) {
             Alert.alert("Campo requerido", "El número de teléfono es obligatorio.");
@@ -81,7 +81,7 @@ export default function PerfilScreen() {
             Alert.alert("Formato inválido", "El teléfono debe contener entre 7 y 15 dígitos.");
             return;
         }
-
+ 
         // Volver a leer el perfil en almacenamiento para evitar inconsistencias de estado
         let perfilEnDisco = null;
         try {
@@ -90,20 +90,20 @@ export default function PerfilScreen() {
             Alert.alert("Error de almacenamiento", "No se pudo comprobar el perfil en almacenamiento. Inténtalo nuevamente.");
             return;
         }
-
+ 
         const tienePerfilGuardado = perfilEnDisco !== null;
-
+ 
         if (!tienePerfilGuardado) {
             // Flujo de Registro: solicita obligatoriamente Nombre, Apellido y Foto
             const nombreLimpio = nombre.trim();
             const apellidoLimpio = apellido.trim();
             const fotoLimpia = foto.trim();
-
+ 
             if (!nombreLimpio || !apellidoLimpio || !fotoLimpia) {
                 Alert.alert("Campos obligatorios", "Por favor completa Nombre, Apellido y Foto para registrarte.");
                 return;
             }
-
+ 
             try {
                 const nuevoPerfil = {
                     nombre: nombreLimpio,
@@ -138,7 +138,36 @@ export default function PerfilScreen() {
             }
         }
     };
-
+ 
+    // 3. Eliminar perfil (como en MercadoEjemplo con removeData y confirmación)
+    const eliminarPerfil = () => {
+        Alert.alert(
+            "Eliminar Perfil",
+            "¿Estás seguro de que deseas eliminar este perfil del almacenamiento local?",
+            [
+                { text: "Cancelar", style: "cancel" },
+                {
+                    text: "Eliminar",
+                    style: "destructive",
+                    onPress: async () => {
+                        try {
+                            await removeData(PERFIL_KEY);
+                            setNombre('');
+                            setApellido('');
+                            setCorreo('');
+                            setTelefono('');
+                            setFoto('');
+                            setExistePerfil(false);
+                            Alert.alert("Éxito", "Perfil eliminado correctamente. Puedes registrar uno nuevo.");
+                        } catch (error) {
+                            Alert.alert("Error", "No se pudo eliminar el perfil.");
+                        }
+                    },
+                },
+            ]
+        );
+    };
+ 
     if (cargando) {
         return (
             <View style={styles.centerContainer}>
@@ -146,7 +175,7 @@ export default function PerfilScreen() {
             </View>
         );
     }
-
+ 
     if (errorCarga) {
         return (
             <View style={[styles.container, styles.centerContainer, { paddingTop: insets.top, paddingHorizontal: spacing.lg }]}>
@@ -162,7 +191,7 @@ export default function PerfilScreen() {
             </View>
         );
     }
-
+ 
     return (
         <View style={[styles.container, { paddingTop: insets.top + spacing.md }]}>
             <ScrollView
@@ -190,7 +219,7 @@ export default function PerfilScreen() {
                             : 'Completa todos los campos para registrarte'}
                     </Text>
                 </View>
-
+ 
                 {/* Formulario */}
                 <View style={styles.formContainer}>
                     {/* Campo Foto (solo en registro) */}
@@ -206,10 +235,10 @@ export default function PerfilScreen() {
                             />
                         </>
                     )}
-
+ 
                     {/* Nombre (bloqueado si existe perfil) */}
                     <Text style={styles.label}>
-                        Nombre {existePerfil && <Text style={styles.tagBloqueado}>(No editable)</Text>}
+                        Nombre {existePerfil && <Text style={styles.tagBloqueado}></Text>}
                     </Text>
                     <TextInput
                         style={[styles.input, existePerfil && styles.inputDisabled]}
@@ -218,10 +247,10 @@ export default function PerfilScreen() {
                         placeholder="Ej. Juan"
                         editable={!existePerfil}
                     />
-
+ 
                     {/* Apellido (bloqueado si existe perfil) */}
                     <Text style={styles.label}>
-                        Apellido {existePerfil && <Text style={styles.tagBloqueado}>(No editable)</Text>}
+                        Apellido {existePerfil && <Text style={styles.tagBloqueado}></Text>}
                     </Text>
                     <TextInput
                         style={[styles.input, existePerfil && styles.inputDisabled]}
@@ -230,7 +259,7 @@ export default function PerfilScreen() {
                         placeholder="Ej. Pérez"
                         editable={!existePerfil}
                     />
-
+ 
                     <Text style={styles.label}>Correo electrónico</Text>
                     <TextInput
                         style={styles.input}
@@ -240,7 +269,7 @@ export default function PerfilScreen() {
                         keyboardType="email-address"
                         autoCapitalize="none"
                     />
-
+ 
                     <Text style={styles.label}>Teléfono</Text>
                     <TextInput
                         style={styles.input}
@@ -249,18 +278,29 @@ export default function PerfilScreen() {
                         placeholder="Ej. 1234567890"
                         keyboardType="phone-pad"
                     />
-
-                    <TouchableOpacity style={styles.boton} onPress={guardarPerfil}>
+ 
+                    <TouchableOpacity
+                        style={[styles.boton, !existePerfil && { marginBottom: 40 }]}
+                        onPress={guardarPerfil}
+                    >
                         <Text style={styles.textoBoton}>
                             {existePerfil ? 'Actualizar Datos' : 'Guardar Perfil'}
                         </Text>
                     </TouchableOpacity>
+ 
+                    {/* Botón para eliminar perfil (como en MercadoEjemplo) */}
+                    {existePerfil && (
+                        <TouchableOpacity style={styles.botonEliminar} onPress={eliminarPerfil}>
+                            <Ionicons name="trash-outline" size={18} color="#ef4444" style={{ marginRight: 6 }} />
+                            <Text style={styles.textoBotonEliminar}>Eliminar Perfil</Text>
+                        </TouchableOpacity>
+                    )}
                 </View>
             </ScrollView>
         </View>
     );
 }
-
+ 
 const styles = StyleSheet.create({
     container: {
         flex: 1,
@@ -342,7 +382,23 @@ const styles = StyleSheet.create({
         borderRadius: 8,
         alignItems: 'center',
         marginTop: spacing.md,
+    },
+    botonEliminar: {
+        flexDirection: 'row',
+        alignItems: 'center',
+        justifyContent: 'center',
+        padding: 14,
+        borderRadius: 8,
+        borderWidth: 1,
+        borderColor: '#fca5a5',
+        backgroundColor: '#fef2f2',
+        marginTop: spacing.md,
         marginBottom: 40,
+    },
+    textoBotonEliminar: {
+        color: '#ef4444',
+        fontSize: 15,
+        fontWeight: 'bold',
     },
     textoBoton: {
         color: '#ffffff',

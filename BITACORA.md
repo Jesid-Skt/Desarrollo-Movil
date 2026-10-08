@@ -53,4 +53,10 @@ IP: No registrada
 HORA: 07/10/2026 23:25:40 -05:00
 RESPUESTA: Se revisó la modificación de PerfilScreen sin alterar su código. Se sugirió distinguir un error al leer el almacenamiento de un perfil inexistente, volver a comprobar el perfil persistido antes de guardar para evitar depender de un estado desactualizado y considerar validar el formato del correo y teléfono. La pantalla ya separa registro y actualización, requiere campos para registrar y deja nombre y apellido no editables cuando el perfil existe.
 -------------------------
+
+--- BITÁCORA DE LA IA ---
+USUARIO: Desarrollador Local
+IP: 192.168.1.7
+HORA: 07/10/2026 23:58:29 -05:00
+RESPUESTA: Se revisó la sincronización de cupos implementada en DetalleClaseScreen y ReservasContext. Los cupos ahora se calculan en tiempo real a partir de las reservas activas, la creación valida nuevamente la disponibilidad y la cancelación elimina la reserva del estado persistido, permitiendo que el cupo vuelva a estar disponible.
 -------------------------

@@ -6,40 +6,45 @@ import EtiquetaNivel from '../components/EtiquetaNivel';
 import { colors, spacing, radius, typography } from '../theme';
 import { formatearPrecio } from '../data/clases';
 import useReserva from '../hooks/useReserva';
-
+ 
 export default function DetalleClaseScreen({ route, navigation }) {
     const insets = useSafeAreaInsets();
     const { clase } = route.params;
-    const { agregarReserva } = useReserva();
-
+    const { agregarReserva, obtenerCuposDisponibles } = useReserva();
+ 
     const [horarioSeleccionado, setHorarioSeleccionado] = useState(null);
-    const [cuposDisponibles, setCuposDisponibles] = useState(clase.cupos);
-
+ 
+    // Cupos disponibles calculados en tiempo real desde el contexto global
+    const cuposDisponibles = obtenerCuposDisponibles ? obtenerCuposDisponibles(clase) : clase.cupos;
     const sinCupos = cuposDisponibles <= 0;
-
+ 
     const confirmarReserva = () => {
         if (!horarioSeleccionado) {
-            Alert.alert('Horario requerido', 'Por favor selecciona un horario para la clase.');
+            Alert.alert("Selecciona un horario", "Por favor elige un horario antes de continuar.");
             return;
         }
-
+ 
         if (sinCupos) {
-            Alert.alert('Sin cupos', 'No quedan cupos disponibles para esta clase.');
+            Alert.alert("Sin cupos", "Esta clase no cuenta con cupos disponibles.");
             return;
         }
-
+ 
         const resultado = agregarReserva(clase, horarioSeleccionado);
-
+ 
         if (resultado.ok) {
-            setCuposDisponibles(prev => prev - 1);
-            Alert.alert('¡Éxito!', resultado.mensaje, [
-                { text: 'Aceptar', onPress: () => navigation.goBack() }
+            Alert.alert("¡Reserva Confirmada!", resultado.mensaje, [
+                {
+                    text: "Ver mis reservas",
+                    onPress: () => navigation.goBack(),
+                },
+                { text: "Aceptar" }
             ]);
+            setHorarioSeleccionado(null);
         } else {
-            Alert.alert('Atención', resultado.mensaje);
+            Alert.alert("No se pudo reservar", resultado.mensaje);
         }
     };
-
+ 
     return (
         <View style={styles.pantalla}>
             <ScrollView
@@ -58,7 +63,7 @@ export default function DetalleClaseScreen({ route, navigation }) {
                             <Text style={styles.ratingTexto}>{clase.rating}</Text>
                         </View>
                     </View>
-
+ 
                     <View style={styles.datos}>
                         <View style={styles.dato}>
                             <Ionicons name="time-outline" size={20} color={colors.primario} />
@@ -71,7 +76,7 @@ export default function DetalleClaseScreen({ route, navigation }) {
                             <Text style={styles.datoValor}>{cuposDisponibles} disponibles</Text>
                         </View>
                     </View>
-
+ 
                     <View style={styles.seccion}>
                         <Text style={styles.seccionTitulo}>Tu profesor</Text>
                         <View style={styles.profesor}>
@@ -82,18 +87,18 @@ export default function DetalleClaseScreen({ route, navigation }) {
                             </View>
                         </View>
                     </View>
-
+ 
                     <View style={styles.seccion}>
                         <Text style={styles.seccionTitulo}>Sobre esta clase</Text>
                         <Text style={styles.descripcion}>{clase.descripcion}</Text>
                     </View>
-
+ 
                     <View style={styles.seccion}>
                         <Text style={styles.seccionTitulo}>Horarios disponibles</Text>
                         <View style={styles.horarios}>
                             {clase.horarios.map(horario => {
                                 const seleccionado = horario === horarioSeleccionado;
-
+ 
                                 return (
                                     <Pressable
                                         key={horario}
@@ -146,7 +151,7 @@ export default function DetalleClaseScreen({ route, navigation }) {
         </View>
     );
 }
-
+ 
 const styles = StyleSheet.create({
     pantalla: { flex: 1, backgroundColor: colors.fondo },
     portada: { width: '100%', height: 230, backgroundColor: colors.primarioSuave },

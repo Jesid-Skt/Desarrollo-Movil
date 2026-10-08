@@ -46,4 +46,11 @@ IP: 192.168.10.13
 HORA: 05/10/2026 20:12:46 -05:00
 RESPUESTA: Se recomienda integrar la pantalla de perfil como contenido dentro de la pestaña Perfil de MainScreen, manteniendo la navegación inferior manual actual y dejando la migración a Bottom Tabs para una etapa posterior; se sugirió crear ProfileScreen, importarlo y reemplazar el placeholder con un diseño consistente con el tema de la app.
 -------------------------
+
+--- BITÁCORA DE LA IA ---
+USUARIO: Desarrollador Local
+IP: No registrada
+HORA: 07/10/2026 23:25:40 -05:00
+RESPUESTA: Se revisó la modificación de PerfilScreen sin alterar su código. Se sugirió distinguir un error al leer el almacenamiento de un perfil inexistente, volver a comprobar el perfil persistido antes de guardar para evitar depender de un estado desactualizado y considerar validar el formato del correo y teléfono. La pantalla ya separa registro y actualización, requiere campos para registrar y deja nombre y apellido no editables cuando el perfil existe.
+-------------------------
 -------------------------

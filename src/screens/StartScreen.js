@@ -6,169 +6,89 @@ import {
   StyleSheet,
   TextInput,
   FlatList,
-  Alert,
+  Pressable,
+  Image, // 1. Se agrega Image
 } from "react-native";
+
+import { SafeAreaView } from "react-native-safe-area-context";
 
 import { Ionicons } from "@expo/vector-icons";
 
-import {
-  colors,
-  spacing,
-  radius,
-  typography,
-} from "../theme";
+import { colors, spacing, radius, typography } from "../theme";
 
 import { NIVELES } from "../data/clases";
 
 import NivelChip from "../components/NivelChip";
 import Card from "../components/Card";
-import ReservaCard from "../components/ReservaCard";
 
 import useResponsive from "../hooks/useResponsive";
+
 import { useReservas } from "../context/ReserveContext";
+import { useProfile } from "../context/ProfileContext"; // 2. Se importa useProfile
 
 export default function StartScreen({ navigation }) {
   const [nivel, setNivel] = useState("Todos");
+
   const [busqueda, setBusqueda] = useState("");
 
-  const {
-    isTablet,
-    horizontalPadding,
-    titleSize,
-    maxContentWidth,
-  } = useResponsive();
+  const { isTablet, horizontalPadding, titleSize, maxContentWidth } =
+    useResponsive();
 
-  /*
-   * Las clases y reservas vienen del contexto.
-   *
-   * Esto es importante porque:
-   *
-   * reservar -> cupos - 1
-   * cancelar -> cupos + 1
-   *
-   * y StartScreen se actualiza automáticamente.
-   */
-  const {
-    clases,
-    reservas,
-    cancelarReserva,
-  } = useReservas();
+  const { clases } = useReservas();
+  const { profile } = useProfile(); // 3. Se obtiene el objeto profile
 
-  /*
-   * Filtrado por nivel + búsqueda.
+  /**
+   * Filtro:
+   *
+   * nivel + búsqueda
    */
   const clasesFiltradas = useMemo(() => {
-    return clases.filter((clase) => {
-      const coincideNivel =
-        nivel === "Todos" ||
-        clase.nivel === nivel;
+    const termino = busqueda.trim().toLowerCase();
 
-      const texto = `
-        ${clase.titulo}
-        ${clase.nivel}
-        ${clase.profesor.nombre}
-      `.toLowerCase();
+    return (clases || []).filter((clase) => {
+      const coincideNivel = nivel === "Todos" || clase.nivel === nivel;
 
-      const coincideBusqueda =
-        texto.includes(busqueda.toLowerCase());
+      const texto = [clase.titulo, clase.nivel, clase.profesor?.nombre]
+        .filter(Boolean)
+        .join(" ")
+        .toLowerCase();
 
-      return coincideNivel && coincideBusqueda;
+      return coincideNivel && texto.includes(termino);
     });
   }, [clases, nivel, busqueda]);
 
-  /*
-   * Confirmación antes de cancelar.
-   */
-  const confirmarCancelacion = (reserva) => {
-    Alert.alert(
-      "Cancelar reserva",
-      `¿Seguro que deseas cancelar "${reserva.titulo}"?`,
-      [
+  const renderClase = ({ item }) => (
+    <View
+      style={[
+        styles.itemCarrusel,
         {
-          text: "No",
-          style: "cancel",
+          width: isTablet ? 380 : 310,
         },
-        {
-          text: "Sí, cancelar",
-          style: "destructive",
-          onPress: () => {
-            const resultado =
-              cancelarReserva(reserva.id);
-
-            if (!resultado?.ok) {
-              Alert.alert(
-                "No se pudo cancelar",
-                resultado?.mensaje ||
-                  "No fue posible cancelar la reserva."
-              );
-            }
-          },
-        },
-      ]
-    );
-  };
-
-  /*
-   * Card de cada clase del carrusel.
-   */
-  const renderClase = ({ item }) => {
-    return (
-      <View
-        style={[
-          styles.itemCarrusel,
-          {
-            width: isTablet ? 380 : 310,
-          },
-        ]}
-      >
-        <Card
-          clase={item}
-          onPress={() =>
-            navigation.navigate(
-              "DetalleClaseScreen",
-              {
-                claseId: item.id,
-              }
-            )
-          }
-        />
-      </View>
-    );
-  };
-
-  /*
-   * Card de cada reserva.
-   */
-  const renderReserva = ({ item }) => {
-    return (
-      <ReservaCard
-        reserva={item}
-        onCancelar={confirmarCancelacion}
+      ]}
+    >
+      <Card
+        clase={item}
+        onPress={() =>
+          navigation.navigate("DetalleClaseScreen", {
+            claseId: item.id,
+          })
+        }
       />
-    );
-  };
+    </View>
+  );
 
-  /*
-   * Toda esta parte queda como encabezado
-   * de la FlatList principal.
-   */
   const header = (
     <View>
-      {/* =========================
-          ENCABEZADO
-      ========================== */}
-
       <View style={styles.encabezado}>
         <View style={styles.encabezadoTexto}>
-          <Text style={styles.saludo}>
-            APRENDE A TU RITMO
-          </Text>
+          <Text style={styles.saludo}>APRENDE A TU RITMO</Text>
 
           <Text
             style={[
               styles.titulo,
               {
                 fontSize: titleSize,
+
                 maxWidth: isTablet ? 500 : 280,
               },
             ]}
@@ -177,34 +97,27 @@ export default function StartScreen({ navigation }) {
           </Text>
         </View>
 
-        <View style={styles.iconoPerfil}>
-          <Ionicons
-            name="person-outline"
-            size={20}
-            color={colors.primario}
-          />
-        </View>
+        <Pressable
+          style={styles.iconoPerfil}
+          onPress={() => navigation.getParent()?.navigate("PerfilTab")}
+        >
+          {profile?.foto ? (
+            <Image
+              source={{ uri: profile.foto }}
+              style={styles.imagenPerfilBarra}
+            />
+          ) : (
+            <Ionicons name="person-outline" size={20} color={colors.primario} />
+          )}
+        </Pressable>
       </View>
 
-      {/* =========================
-          DESCRIPCIÓN
-      ========================== */}
-
       <Text style={styles.descripcion}>
-        Practica inglés con profesores que se adaptan
-        a tus objetivos.
+        Practica inglés con profesores que se adaptan a tus objetivos.
       </Text>
 
-      {/* =========================
-          BUSCADOR
-      ========================== */}
-
       <View style={styles.buscador}>
-        <Ionicons
-          name="search-outline"
-          size={20}
-          color={colors.textoSuave}
-        />
+        <Ionicons name="search-outline" size={20} color={colors.textoSuave} />
 
         <TextInput
           style={styles.input}
@@ -214,21 +127,15 @@ export default function StartScreen({ navigation }) {
           placeholderTextColor={colors.textoSuave}
           autoCorrect={false}
           autoComplete="off"
+          returnKeyType="search"
         />
 
         {busqueda.length > 0 && (
-          <Ionicons
-            name="close-circle"
-            size={19}
-            color={colors.textoSuave}
-            onPress={() => setBusqueda("")}
-          />
+          <Pressable onPress={() => setBusqueda("")}>
+            <Ionicons name="close-circle" size={19} color={colors.textoSuave} />
+          </Pressable>
         )}
       </View>
-
-      {/* =========================
-          FILTROS
-      ========================== */}
 
       <FlatList
         data={NIVELES}
@@ -245,18 +152,10 @@ export default function StartScreen({ navigation }) {
         )}
       />
 
-      {/* =========================
-          CLASES DISPONIBLES
-      ========================== */}
-
       <View style={styles.seccionEncabezado}>
-        <Text style={styles.seccionTitulo}>
-          Clases disponibles
-        </Text>
+        <Text style={styles.seccionTitulo}>Clases disponibles</Text>
 
-        <Text style={styles.contador}>
-          {clasesFiltradas.length} resultados
-        </Text>
+        <Text style={styles.contador}>{clasesFiltradas.length} resultados</Text>
       </View>
 
       {clasesFiltradas.length > 0 ? (
@@ -270,11 +169,7 @@ export default function StartScreen({ navigation }) {
         />
       ) : (
         <View style={styles.vacio}>
-          <Ionicons
-            name="search-outline"
-            size={28}
-            color={colors.textoSuave}
-          />
+          <Ionicons name="search-outline" size={28} color={colors.textoSuave} />
 
           <Text style={styles.textoVacio}>
             No encontramos clases con esos filtros.
@@ -282,72 +177,51 @@ export default function StartScreen({ navigation }) {
         </View>
       )}
 
-      {/* =========================
-          MIS RESERVAS
-      ========================== */}
+      <View style={styles.ayudaReservas}>
+        <Ionicons name="calendar-outline" size={22} color={colors.primario} />
 
-      <View style={styles.reservasEncabezado}>
-        <View>
-          <Text style={styles.seccionTitulo}>
-            Mis reservas
-          </Text>
+        <View style={styles.ayudaTexto}>
+          <Text style={styles.ayudaTitulo}>¿Ya tienes una reserva?</Text>
 
-          <Text style={styles.reservasDescripcion}>
-            Tus clases agendadas
-          </Text>
-        </View>
-
-        <View style={styles.contadorReservas}>
-          <Text style={styles.contadorReservasTexto}>
-            {reservas.length}
+          <Text style={styles.ayudaDescripcion}>
+            Puedes consultarla y gestionarla desde la pestaña Reservas.
           </Text>
         </View>
       </View>
-
-      {reservas.length === 0 && (
-        <View style={styles.reservasVacias}>
-          <Ionicons
-            name="calendar-outline"
-            size={30}
-            color={colors.textoSuave}
-          />
-
-          <Text style={styles.reservasVaciasTitulo}>
-            No tienes reservas
-          </Text>
-
-          <Text style={styles.reservasVaciasTexto}>
-            Reserva una clase y aparecerá aquí.
-          </Text>
-        </View>
-      )}
     </View>
   );
 
   return (
-    <FlatList
-      data={reservas}
-      keyExtractor={(item) => item.id}
-      renderItem={renderReserva}
-      ListHeaderComponent={header}
-      showsVerticalScrollIndicator={false}
-      contentContainerStyle={[
-        styles.contenedor,
-        {
-          paddingHorizontal: horizontalPadding,
-          maxWidth: maxContentWidth,
-          alignSelf: "center",
-          width: "100%",
-        },
-      ]}
-      ListFooterComponent={
-        <View style={styles.footer} />
-      }
-    />
+    <SafeAreaView style={styles.safeArea} edges={["bottom"]}>
+      <FlatList
+        data={[]}
+        renderItem={null}
+        ListHeaderComponent={header}
+        showsVerticalScrollIndicator={false}
+        contentContainerStyle={[
+          styles.contenedor,
+          {
+            paddingHorizontal: horizontalPadding,
+
+            maxWidth: maxContentWidth,
+
+            alignSelf: "center",
+
+            width: "100%",
+          },
+        ]}
+        ListFooterComponent={<View style={styles.footer} />}
+      />
+    </SafeAreaView>
   );
 }
 
 const styles = StyleSheet.create({
+  safeArea: {
+    flex: 1,
+    backgroundColor: colors.fondo,
+  },
+
   contenedor: {
     paddingTop: spacing.lg,
     paddingBottom: spacing.xl * 2,
@@ -394,6 +268,13 @@ const styles = StyleSheet.create({
     backgroundColor: colors.primarioSuave,
     alignItems: "center",
     justifyContent: "center",
+    overflow: "hidden", // Recorta la imagen circularmente
+  },
+
+  imagenPerfilBarra: {
+    width: "100%",
+    height: "100%",
+    resizeMode: "cover",
   },
 
   buscador: {
@@ -436,78 +317,12 @@ const styles = StyleSheet.create({
     fontSize: 12,
   },
 
-  /*
-   * =========================
-   * CARRUSEL
-   * =========================
-   */
-
   carrusel: {
     paddingBottom: spacing.lg,
   },
 
   itemCarrusel: {
     marginRight: spacing.md,
-  },
-
-  /*
-   * =========================
-   * RESERVAS
-   * =========================
-   */
-
-  reservasEncabezado: {
-    flexDirection: "row",
-    alignItems: "center",
-    justifyContent: "space-between",
-    marginTop: spacing.lg,
-    marginBottom: spacing.md,
-  },
-
-  reservasDescripcion: {
-    color: colors.textoSuave,
-    fontSize: 12,
-    marginTop: 3,
-  },
-
-  contadorReservas: {
-    minWidth: 32,
-    height: 32,
-    paddingHorizontal: 8,
-    borderRadius: radius.full,
-    backgroundColor: colors.primarioSuave,
-    alignItems: "center",
-    justifyContent: "center",
-  },
-
-  contadorReservasTexto: {
-    color: colors.primario,
-    fontSize: 13,
-    fontWeight: "800",
-  },
-
-  reservasVacias: {
-    alignItems: "center",
-    justifyContent: "center",
-    backgroundColor: colors.superficie,
-    borderWidth: 1,
-    borderColor: colors.borde,
-    borderRadius: radius.md,
-    padding: spacing.xl,
-  },
-
-  reservasVaciasTitulo: {
-    color: colors.texto,
-    fontSize: 16,
-    fontWeight: "800",
-    marginTop: spacing.sm,
-  },
-
-  reservasVaciasTexto: {
-    color: colors.textoSuave,
-    fontSize: 13,
-    textAlign: "center",
-    marginTop: 4,
   },
 
   vacio: {
@@ -523,8 +338,34 @@ const styles = StyleSheet.create({
     fontSize: 14,
   },
 
+  ayudaReservas: {
+    flexDirection: "row",
+    alignItems: "center",
+    backgroundColor: colors.primarioSuave,
+    borderRadius: radius.md,
+    padding: spacing.md,
+    marginTop: spacing.md,
+  },
+
+  ayudaTexto: {
+    flex: 1,
+    marginLeft: spacing.sm,
+  },
+
+  ayudaTitulo: {
+    color: colors.texto,
+    fontSize: 14,
+    fontWeight: "800",
+  },
+
+  ayudaDescripcion: {
+    color: colors.textoSuave,
+    fontSize: 12,
+    lineHeight: 18,
+    marginTop: 2,
+  },
+
   footer: {
     height: spacing.xl,
   },
 });
-
